@@ -1,4 +1,4 @@
-from Location import Location
+from src.Location import Location
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 
