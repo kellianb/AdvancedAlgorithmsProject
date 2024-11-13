@@ -26,6 +26,7 @@ class Location:
         return sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
     def find_closest(self, others: list["Location"]) -> tuple["Location", list["Location"]]:
+        """Find the closest location in a list to this location"""
         distance_pairs = [(self.distance_to(record), record) for record in others]
 
         # Sort by distance
@@ -33,6 +34,7 @@ class Location:
 
         # First element is closest
         closest = distance_pairs.pop(0)[1]
+
         # Rest are the remaining locations
         others = [pair[1] for pair in distance_pairs]
 
