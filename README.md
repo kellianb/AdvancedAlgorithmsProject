@@ -19,13 +19,13 @@ The objective is to minimize the number of routes and the total time/distance tr
 # VRP formulation
 
 We have a graph $G = (V, E)$, where :
-- $V$ is a set whose elements are called _vertices_ (representing the customers and warehouse) , 
+- $V$ is a set whose elements are called _vertices_ (representing warehouse $\{1\}$ and the customers $\{2,...,n\}$), 
 - $E$ is a set of unordered pairs $(i, j)$ of vertices, whose elements are called edges
 (representing the routes between the vertices). We will consider that our graph is fully connected.
 
 We also define the following variables:
 
-- $n$ : Number of customers (number of elements in $V$)
+- $n$ : Number of locations (number of elements in $V$)
 - $i, j$ : These variables will be used to represent different vertices in $V$
 - $d_{ij}$ : Distance between vertices $i$ and $j$
 - $D_{j}$ : Demand of vertex $j$
@@ -37,10 +37,28 @@ We also define the following variables:
 - $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution, allowed values : $\{0, 1\}$. 
 
 ## Constraints
-- Truck capacity constraint :
-$\displaystyle\sum_i^n\sum_j^n x_{ijk} D_j \le c_k \quad \forall k \in \{1, ..., p\}$
+**All customers are visited exactly once:**
 
--
+  $\displaystyle\sum_{k=1}^p\sum_{i=1}^n x_{ijk} =1$
+  $\quad\quad \forall j \in \{2, ..., n\},$ 
+  $\quad i \in \{1, ..., n \},$
+  $\quad k \in \{1, ..., p\}$
+ 
+**Trucks leaves node as often as it enters:**
+
+  $\displaystyle\sum_{i=1}^n x_{ijk} = \sum_{i=1}^n x_{jik}$
+  $\quad\quad \forall j \in \{1, ..., n\},$
+  $\quad i \in \{1, ..., n \},$
+  $\quad k \in \{1, ..., p\}$
+
+
+**Truck capacity constraint:**
+  
+  $\displaystyle\sum_{i=1}^n\sum_{j=1}^n x_{ijk} D_j \le c_k$ 
+  $\quad\quad \forall k \in \{1, ..., p\},$
+  $\quad i,j \in \{1, ..., n\} $
+
+
 
 
 # Project setup steps
