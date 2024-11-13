@@ -1,6 +1,9 @@
+from operator import itemgetter
 from src.Location import Location
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+import itertools
+
 
 @dataclass
 class Route:
@@ -21,7 +24,14 @@ class Route:
         lenght += self.customers[-1].distance_to(self.warehouse)
 
         return lenght
-            
+
+    def brute_force(self):
+        permutations = [Route(self.warehouse, list(record)) for record in itertools.permutations(self.customers)]
+        lens = [(record.len(), record) for record in permutations]
+
+        return min(lens, key=itemgetter(0))[1]
+
+
 
     def plot(self, title: str = "Vehicle Route", figsize: tuple = (10, 8)):
         """
