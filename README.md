@@ -19,7 +19,7 @@ The objective is to minimize the number of routes and the total time/distance tr
 # VRP formulation
 
 We have a graph $G = (V, E)$, where :
-- $V$ is a set whose elements are called _vertices_ (representing warehouse $\{1\}$ and the customers $\{2,...,n\}$), 
+- $V$ is a set whose elements are called _vertices_ (representing warehouse: $\{V_1\}$ and the customers: $\{V_2,...,V_n\}$), 
 - $E$ is a set of unordered pairs $(i, j)$ of vertices and their associated weights, whose elements are called edges
 (representing the routes between the vertices). We will consider that our graph is fully connected.
 
