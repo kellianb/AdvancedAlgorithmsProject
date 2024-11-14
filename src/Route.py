@@ -35,6 +35,8 @@ class Route:
         self.customers += other.customers
         return self
 
+    def demand(self) -> int:
+        return sum([customer.demand for customer in self.customers])
 
     def plot(self, title: str = "Vehicle Route", figsize: tuple = (10, 8)):
         """
@@ -77,7 +79,7 @@ class Route:
         len = self.len()
         
         # Add title and total distance
-        ax.set_title(f"{title} - Total Distance: {str(len)}")
+        ax.set_title(f"{title} - Distance: {str(len)} - Demand: {str(self.demand())}")
         
         # Add legend
         ax.legend()

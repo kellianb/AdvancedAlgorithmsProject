@@ -20,25 +20,27 @@ The objective is to minimize the number of routes and the total time/distance tr
 
 We have a graph $G = (V, E)$, where :
 - $V$ is a set whose elements are called _vertices_ (representing warehouse $\{1\}$ and the customers $\{2,...,n\}$), 
-- $E$ is a set of unordered pairs $(i, j)$ of vertices, whose elements are called edges
+- $E$ is a set of unordered pairs $(i, j)$ of vertices and their associated weights, whose elements are called edges
 (representing the routes between the vertices). We will consider that our graph is fully connected.
 
 We also define the following variables:
 
 - $n$ : Number of locations (number of elements in $V$)
 - $i, j$ : These variables will be used to represent different vertices in $V$
-- $d_{ij}$ : Distance between vertices $i$ and $j$
-- $D_{j}$ : Demand of vertex $j$
+- $w(i, j)$ : Weight of the edge (distance) between vertices $i$ and $j$
+- $d_{j}$ : Demand of vertex $j$
 - $p$ : Number of trucks in the fleet
 - $k$ : This variable will be used to represent different trucks in our fleet
-- $c_k$ : Capacity of the truck $k$
+- $Q_k$ : Capacity of the truck $k$
 
 ## Decision variables
 - $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution.
+
   $$x_{ijk} \begin{cases}
   1 \text{ if the truck } k \text{ goes from } i \text{ to } j \\
   0 \text{ otherwise}
   \end{cases}$$
+
 ## Constraints
 ### All customers are visited exactly once
 
@@ -57,7 +59,7 @@ We also define the following variables:
 
 ### Truck capacity constraint
   
-  $\displaystyle\sum_{i=1}^n\sum_{j=1}^n x_{ijk} D_j \le c_k$ 
+  $\displaystyle\sum_{i=1}^n\sum_{j=1}^n x_{ijk} d_j \le Q_k$ 
   $\quad\quad \forall k \in \{1, ..., p\},$
   $\quad i,j \in \{1, ..., n\}$
 
