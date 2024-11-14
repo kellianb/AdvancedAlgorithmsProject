@@ -16,14 +16,14 @@ class Route:
         self.customers = customers
 
     def len(self) -> float:
-        lenght = 0
+        length = 0
         for i in range(len(self.customers) - 1):
-            lenght += self.customers[i].distance_to(self.customers[i+1])
+            length += self.customers[i].distance_to(self.customers[i+1])
 
-        lenght += self.warehouse.distance_to(self.customers[0])
-        lenght += self.customers[-1].distance_to(self.warehouse)
+        length += self.warehouse.distance_to(self.customers[0])
+        length += self.customers[-1].distance_to(self.warehouse)
 
-        return lenght
+        return length
 
     def brute_force(self):
         permutations = [Route(self.warehouse, list(record)) for record in itertools.permutations(self.customers)]
@@ -31,6 +31,9 @@ class Route:
 
         return min(lens, key=itemgetter(0))[1]
 
+    def merge(self, other: "Route") -> "Route":
+        self.customers += other.customers
+        return self
 
 
     def plot(self, title: str = "Vehicle Route", figsize: tuple = (10, 8)):

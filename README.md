@@ -34,17 +34,20 @@ We also define the following variables:
 - $c_k$ : Capacity of the truck $k$
 
 ## Decision variables
-- $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution, allowed values : $\{0, 1\}$. 
-
+- $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution.
+  $$x_{ijk} \begin{cases}
+  1 \text{ if the truck } k \text{ goes from } i \text{ to } j \\
+  0 \text{ otherwise}
+  \end{cases}$$
 ## Constraints
-**All customers are visited exactly once:**
+### All customers are visited exactly once
 
   $\displaystyle\sum_{k=1}^p\sum_{i=1}^n x_{ijk} =1$
   $\quad\quad \forall j \in \{2, ..., n\},$ 
   $\quad i \in \{1, ..., n \},$
   $\quad k \in \{1, ..., p\}$
  
-**Trucks leaves node as often as it enters:**
+### Trucks leaves node as often as it enters
 
   $\displaystyle\sum_{i=1}^n x_{ijk} = \sum_{i=1}^n x_{jik}$
   $\quad\quad \forall j \in \{1, ..., n\},$
@@ -52,13 +55,22 @@ We also define the following variables:
   $\quad k \in \{1, ..., p\}$
 
 
-**Truck capacity constraint:**
+### Truck capacity constraint
   
   $\displaystyle\sum_{i=1}^n\sum_{j=1}^n x_{ijk} D_j \le c_k$ 
   $\quad\quad \forall k \in \{1, ..., p\},$
-  $\quad i,j \in \{1, ..., n\} $
+  $\quad i,j \in \{1, ..., n\}$
+
+### All trucks leave the depot
+
+  $\displaystyle\sum_{j=2}^n x_{1jk} = 1$
+  $\quad\quad \forall k \in \{1, ..., p\},$
+  $\quad j \in \{2, ..., n \}$
 
 
+
+# Proof that the VRP is NP-hard
+First of all, since the VRP is not a decision problem, but an optimization problem, it cannot be NP-complete.
 
 
 # Project setup steps
