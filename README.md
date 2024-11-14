@@ -36,8 +36,9 @@ We also define the following variables:
 ## Decision variables
 - $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution.
 
-  $$x_{ijk} = \begin{cases} 1 & \text{if truck } k \text{ goes from vertex } i \text{ to vertex } j \\ 0 & \text{otherwise} \end{cases}$$
-
+```math
+x_{ijk} = \begin{cases} 1 & \text{if truck } k \text{ goes from vertex } i \text{ to vertex } j \\ 0 & \text{otherwise} \end{cases}
+```
 
 
 ## Constraints
