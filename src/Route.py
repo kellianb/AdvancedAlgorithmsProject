@@ -25,11 +25,25 @@ class Route:
 
         return length
 
+    # Route solvers
     def brute_force(self):
         permutations = [Route(self.warehouse, list(record)) for record in itertools.permutations(self.customers)]
         lens = [(record.len(), record) for record in permutations]
 
         return min(lens, key=itemgetter(0))[1]
+
+    def nearest_neighbour(self) -> "Route":
+        route = Route(warehouse=self.warehouse, customers=[])
+
+        locations = self.customers.copy()
+
+        current = locations.pop(0)
+
+        while locations:
+            current, locations = current.find_closest(locations)
+            route.customers.append(current)
+
+        return route
 
     def merge(self, other: "Route") -> "Route":
         self.customers += other.customers
