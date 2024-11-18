@@ -28,10 +28,13 @@ We also define the following variables:
 - $n$ : Number of locations (number of elements in $V$)
 - $i, j$ : These variables will be used to represent different vertices in $V$
 - $w(i, j)$ : Weight of the edge (distance) between vertices $i$ and $j$
+- $o(i)$ : Opening time of the delivery window of vertex $i$
+- $e(i)$ : Ending time of the delivery window of vertex $i$
 - $d_{j}$ : Demand of vertex $j$
 - $p$ : Number of trucks in the fleet
 - $k$ : This variable will be used to represent different trucks in our fleet
 - $Q_k$ : Capacity of the truck $k$
+- $t_{ki}$ : Arrival time of truck $k$ at node $i$
 
 ## Decision variables
 - $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution.
@@ -69,6 +72,14 @@ x_{ijk} = \begin{cases} 1 & \text{if truck } k \text{ goes from vertex } i \text
   $\quad\quad \forall k \in \{1, ..., p\},$
   $\quad j \in \{2, ..., n \}$
 
+### Deliveries have to be made during the delivery time window
+
+$o(j) \leq t_{kj} \le e(j)$
+$\quad\quad \forall x_{ijk} = 1,$
+$\quad\quad i,j \in \{1, ..., n\}$
+
+## Fitness function
+$Min\displaystyle\sum_{k=1}^p\sum_{i=1}^n\sum_{i=1}^n w(i,j)x_{ijk}$
 
 
 # Proof that the VRP is NP-hard
@@ -83,7 +94,7 @@ python -m venv ./venv
 ```
 
 ## Activate venv
-```
+```bash
 # Windows
 venv\Scripts\activate.bat
 
@@ -92,6 +103,6 @@ source myvenv/bin/activate
 ```
 
 ## Install dependencies in venv
-```
+```bash
 pip install -r requirements.txt
 ```
