@@ -57,12 +57,14 @@ class Route:
 
     # Route solvers
     def brute_force(self):
+        """Brute force the route, this does not take into account the delivery windows"""
         permutations = [Route(self.warehouse, list(record)) for record in itertools.permutations(self.customers)]
         lens = [(record.len(), record) for record in permutations]
 
         return min(lens, key=itemgetter(0))[1]
 
     def nearest_neighbour(self) -> "Route":
+        """Solve the route with the nearest neighbour algorithm"""
         route = Route(warehouse=self.warehouse, customers=[])
 
         locations = self.customers.copy()
