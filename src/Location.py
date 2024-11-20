@@ -10,7 +10,7 @@ class Location:
     """Class for storing data about VRP locations."""
     id: int
     x: int
-    y:  int
+    y: int
     demand: int
     ready_time: int
     due_date: int
@@ -26,7 +26,7 @@ class Location:
         self.service = service
 
     def distance_to(self, other: "Location") -> float:
-        return sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
+        return sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
     def cost_to(self, other: "Location", current_cost: int = 0) -> float:
         current_cost += self.distance_to(other)
@@ -36,7 +36,9 @@ class Location:
         return current_cost
 
     def find_closest(self, others: list["Location"]) -> tuple["Location", list["Location"]]:
-        """Find the closest location in a list to this location"""
+        """Find the closest neighbor to the current location in a list, return it and the remaining list.
+            :arg others: list of locations to check
+        """
         distance_pairs = [(self.distance_to(record), record) for record in others]
 
         # Sort by distance
