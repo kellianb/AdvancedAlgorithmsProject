@@ -26,6 +26,33 @@ class Route:
 
         return length
 
+    def merge(self, other: "Route") -> "Route":
+        """Merge another route into the current one"""
+        self.customers += other.customers
+        return self
+
+    def demand(self) -> int:
+        """Get total demand of all customers in the route"""
+        return sum([customer.demand for customer in self.customers])
+
+    def cost(self) -> float:
+        """Calculate total cost (distance and possible waiting time for package readiness)"""
+
+        cost = self.warehouse.distance_to(self.customers[0])
+
+        for i in range(len(self.customers) - 1):
+            # If the truck arrives before the package is ready, it must wait
+            # Since distance = time in our model, we add the waiting time to the cost
+
+            cost += max(self.customers[i].ready_time - cost, 0)
+
+            # Add the travel distance to the next customer to the cost
+            cost += self.customers[i].distance_to(self.customers[i + 1])
+
+        cost += self.customers[-1].distance_to(self.warehouse)
+
+        return cost
+
     # Route solvers
     def brute_force(self):
         permutations = [Route(self.warehouse, list(record)) for record in itertools.permutations(self.customers)]
@@ -45,13 +72,6 @@ class Route:
             route.customers.append(current)
 
         return route
-
-    def merge(self, other: "Route") -> "Route":
-        self.customers += other.customers
-        return self
-
-    def demand(self) -> int:
-        return sum([customer.demand for customer in self.customers])
 
     def plot(self, title: str = "Vehicle Route", figsize: tuple = (10, 8)):
         """
