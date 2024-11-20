@@ -16,6 +16,27 @@ To simplify, we consider that the travel time (from $i$ to $j$) equals the dista
 
 The objective is to minimize the number of routes and the total time/distance traveled by the trucks.
 
+# Project setup steps
+
+## Create venv
+```bash
+python -m venv ./venv
+```
+
+## Activate venv
+```bash
+# Windows
+venv\Scripts\activate.bat
+
+# MacOs/Linux
+source myvenv/bin/activate
+```
+
+## Install dependencies in venv
+```bash
+pip install -r requirements.txt
+```
+
 # VRP formulation
 
 We have a graph $G = (V, E)$, where :
@@ -85,24 +106,48 @@ $Min\displaystyle\sum_{k=1}^p\sum_{i=1}^n\sum_{i=1}^n w(i,j)x_{ijk}$
 # Proof that the VRP is NP-hard
 First of all, since the VRP is not a decision problem, but an optimization problem, it cannot be NP-complete.
 
+# Ant Hill Meta-heuristic
 
-# Project setup steps
+## Probability formula
+An ant will move from node $i$ to node $j$ with probability :
 
-## Create venv
-```bash
-python -m venv ./venv
-```
+$p_{i, j}=\frac{\left(\tau_{i, j}^\alpha\right)\left(\eta_{i, j}^\beta\right)}{\sum\left(\tau_{i, j}^\alpha\right)\left(\eta_{i, j}^\beta\right)}$
 
-## Activate venv
-```bash
-# Windows
-venv\Scripts\activate.bat
+where
+- $\tau_{i, j}$ is the amount of pheromone on edge $i, j$
 
-# MacOs/Linux
-source myvenv/bin/activate
-```
+- $\alpha$ is a parameter to control the influence of $\tau_{i, j}$
 
-## Install dependencies in venv
-```bash
-pip install -r requirements.txt
-```
+- $\eta_{i, j}$ is the desirability of edge $i, j$ (typically $1 / d_{i, j}$ ) 
+
+- $\beta$ is a parameter to control the influence of $\eta_{i, j}$
+
+## Pheromone formula
+Amount of pheromone is updated according to the equation
+
+$$
+\tau_{i, j}=(1-\rho) \tau_{i, j}+\Delta \tau_{i, j}
+$$
+
+where
+- $\tau_{i, j}$ is the amount of pheromone on a given edge $i, j$
+
+- $\rho$ is the rate of pheromone evaporation
+
+- $\Delta \tau_{i, j}$ is the amount of pheromone deposited, typically given by:
+
+
+$$
+\Delta \tau_{i, j}^k= \begin{cases}1 / L_k & \text { if ant } k \text { travels on edge } i, j \\ 0 & \text { otherwise }\end{cases}
+$$
+
+where 
+- $L_k$ is the cost of the $k^{\text {th }}$ ant's tour (typically length).
+
+NOTE: We will have to find a way to include the time window constraint into this
+
+
+# TODO
+- Fix time constraint
+- Look into : Local search, Ant colony, Variable neighbourhood search
+
