@@ -63,19 +63,37 @@ class Route:
 
         return min(lens, key=itemgetter(0))[1]
 
-    def nearest_neighbour(self) -> "Route":
+    def nearest_neighbour_heuristic(self, max_demand: Optional["int"] = None) -> tuple["Route", list[Location]]:
         """Solve the route with the nearest neighbour algorithm"""
         route = Route(warehouse=self.warehouse, customers=[])
 
         locations = self.customers.copy()
 
-        current = locations.pop(0)
+        current = self.warehouse
+
+        cost = self.warehouse.distance_to(current)
+        demand = 0
 
         while locations:
-            current, locations = current.find_closest(locations)
+            current, additional_cost, locations = current.find_nearest_reachable(locations, cost)
+
+            cost += additional_cost
+
+            # If no reachable customer is found
+            if not current:
+                break
+
+            demand += current.demand
+
+            # Return if max_demand is reached
+            if max_demand and demand > max_demand:
+                # Add the current location back onto the list of locations
+                locations.append(current)
+                break
+
             route.customers.append(current)
 
-        return route
+        return route, locations
 
     def plot(self, xmin=Optional[int], xmax=Optional[int], ymin=Optional[int], ymax=Optional[int],
              title: str = "Vehicle Route", figsize: tuple = (10, 8)):
