@@ -1,4 +1,6 @@
 from operator import itemgetter
+from typing import Optional
+
 from src.Location import Location
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
@@ -73,7 +75,8 @@ class Route:
 
         return route
 
-    def plot(self, title: str = "Vehicle Route", figsize: tuple = (10, 8)):
+    def plot(self, xmin=Optional[int], xmax=Optional[int], ymin=Optional[int], ymax=Optional[int],
+             title: str = "Vehicle Route", figsize: tuple = (10, 8)):
         """
         Plot a VRP route showing warehouse, customers, and the complete path.
         
@@ -81,60 +84,72 @@ class Route:
             route (Route): Route object containing warehouse and customer locations
             title (str): Title for the plot
             figsize (tuple): Figure size in inches (width, height)
+            :param figsize: figsize
+            :param title: Title of the plot
+            :param ymax: Max y of the plot
+            :param ymin: Min y of the plot
+            :param xmax: Max x of the plot
+            :param xmin: Min x of the plot
         """
         # Create figure and axis
         fig, ax = plt.subplots(figsize=figsize)
-        
+
+        if xmin and xmax and ymin and ymax:
+            ax.set_xlim(left=xmin, right=xmax)
+            ax.set_ylim(bottom=ymin, top=ymax)
+
         # Plot warehouse
-        ax.scatter(self.warehouse.x, self.warehouse.y, 
-                c='red', s=100, label='Warehouse', 
-                marker='s', zorder=3)
-        
+        ax.scatter(self.warehouse.x, self.warehouse.y,
+                   c='red', s=100, label='Warehouse',
+                   marker='s', zorder=3)
+
         # Plot customers
-        ax.scatter([c.x for c in self.customers], [c.y for c in self.customers], 
-                c='blue', s=80, label='Customers',
-                marker='o', zorder=2)
-        
+        ax.scatter([c.x for c in self.customers], [c.y for c in self.customers],
+                   c='blue', s=80, label='Customers',
+                   marker='o', zorder=2)
+
         # Create route path including return to warehouse
         path_x = [self.warehouse.x] + [c.x for c in self.customers] + [self.warehouse.x]
         path_y = [self.warehouse.y] + [c.y for c in self.customers] + [self.warehouse.y]
-        
+
         # Plot route path
-        ax.plot(path_x, path_y, 'g--', alpha=0.7, 
-            linewidth=1.5, label='Route', zorder=1)
-        
+        ax.plot(path_x, path_y, 'g--', alpha=0.7,
+                linewidth=1.5, label='Route', zorder=1)
+
         # Add labels for warehouse and customers
         ax.annotate('W', (self.warehouse.x, self.warehouse.y),
-                xytext=(5, 5), textcoords='offset points')
-        
-        for loc in self.customers:
-            ax.annotate(f'C{loc.id}', (loc.x, loc.y),
                     xytext=(5, 5), textcoords='offset points')
 
-        len = self.len()
-        
+        for loc in self.customers:
+            ax.annotate(f'C{loc.id}', (loc.x, loc.y),
+                        xytext=(5, 5), textcoords='offset points')
+
         # Add title and total distance
-        ax.set_title(f"{title} - Distance: {str(len)} - Demand: {str(self.demand())}")
-        
+        ax.set_title(f"{title}")
+
+        infostr = f"Distance: {str(self.len())}"
+        infostr += f"\nCost: {str(self.cost())}"
+        infostr += f"\nDemand: {str(self.demand())}"
+        infostr += f"\nCustomer No: {len(self.customers)}"
+
+        plt.figtext(0.68, 0.15, infostr)
+
         # Add legend
         ax.legend()
-        
+
         # Equal aspect ratio for proper distance visualization
         ax.set_aspect('equal')
-        
+
         # Add grid
         ax.grid(True, linestyle=':', alpha=0.6)
-        
+
         # Add labels
         ax.set_xlabel('X Coordinate')
         ax.set_ylabel('Y Coordinate')
 
-
         plt.grid(True, linestyle='--', alpha=0.7)
-        
+
         # Auto-adjust margins
         plt.tight_layout()
-        
+
         return fig, ax
-
-
