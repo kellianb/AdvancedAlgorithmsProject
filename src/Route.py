@@ -16,11 +16,12 @@ class Route:
         self.customers = customers
 
     def len(self) -> float:
-        length = 0
-        for i in range(len(self.customers) - 1):
-            length += self.customers[i].distance_to(self.customers[i+1])
+        """Calculate total route distance"""
+        length = self.warehouse.distance_to(self.customers[0])
 
-        length += self.warehouse.distance_to(self.customers[0])
+        for i in range(len(self.customers) - 1):
+            length += self.customers[i].distance_to(self.customers[i + 1])
+
         length += self.customers[-1].distance_to(self.warehouse)
 
         return length
