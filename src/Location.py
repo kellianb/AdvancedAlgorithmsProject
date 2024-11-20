@@ -25,6 +25,13 @@ class Location:
     def distance_to(self, other: "Location") -> float:
         return sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
+    def cost_to(self, other: "Location", current_cost: int = 0) -> float:
+        current_cost += self.distance_to(other)
+
+        # Add potential waiting time
+        current_cost += max(other.ready_time - current_cost, 0)
+        return current_cost
+
     def find_closest(self, others: list["Location"]) -> tuple["Location", list["Location"]]:
         """Find the closest location in a list to this location"""
         distance_pairs = [(self.distance_to(record), record) for record in others]
