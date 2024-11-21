@@ -63,37 +63,40 @@ class Route:
 
         return min(lens, key=itemgetter(0))[1]
 
-    def nearest_neighbour_heuristic(self, max_demand: Optional["int"] = None) -> tuple["Route", list[Location]]:
-        """Solve the route with the nearest neighbour algorithm"""
-        route = Route(warehouse=self.warehouse, customers=[])
+    def print(self):
+        print("==== Route =====")
+        print(f"Total demand: {self.demand()}")
+        print(f"Total distance: {self.len()}")
+        print(f"Total cost: {self.cost()}")
+        print(f"Total customers: {len(self.customers)}")
+        print("\n")
 
-        locations = self.customers.copy()
+        cost = 0
 
-        current = self.warehouse
+        print(f"{'■ Warehouse':<30} ID: {self.warehouse.id}")
+        print(f"|   Departure: {cost}")
+        print("|")
 
-        cost = self.warehouse.distance_to(current)
-        demand = 0
 
-        while locations:
-            current, additional_cost, locations = current.find_nearest_reachable(locations, cost)
+        cost += self.warehouse.distance_to(self.customers[0])
 
-            cost += additional_cost
+        for i in range(len(self.customers)):
+            print("|")
+            print(f"▼   Arrival: {cost}")
+            print(f"{'⌂ Customer ' + str(i+1) + '/' + str(len(self.customers)) :<30} ID: {self.customers[i].id}")
 
-            # If no reachable customer is found
-            if not current:
-                break
+            waiting_time = max(self.customers[i].ready_time - cost, 0)
+            print(f"… Waiting Time: {waiting_time}")
+            cost += waiting_time
+            print(f"|   Departure: {cost}")
+            print("|")
+            if i < len(self.customers) - 1:
+                cost += self.customers[i].distance_to(self.customers[i + 1])
 
-            demand += current.demand
-
-            # Return if max_demand is reached
-            if max_demand and demand > max_demand:
-                # Add the current location back onto the list of locations
-                locations.append(current)
-                break
-
-            route.customers.append(current)
-
-        return route, locations
+        cost += self.customers[-1].distance_to(self.warehouse)
+        print("|")
+        print(f"▼   Arrival: {cost}")
+        print(f"{'■ Warehouse':<30} ID: {self.warehouse.id}")
 
     def plot(self, xmin=Optional[int], xmax=Optional[int], ymin=Optional[int], ymax=Optional[int],
              title: str = "Vehicle Route", figsize: tuple = (10, 8)):

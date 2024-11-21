@@ -30,10 +30,34 @@ class Iteration:
 
     def nearest_neighbor_heuristic(self) -> "Iteration":
         while self._locationBuf:
-            route = Route(warehouse=self.warehouse, customers=self._locationBuf)
-            new_route, self._locationBuf = route.nearest_neighbour_heuristic(self.vehicleCapacity)
-            self.routes.append(new_route)
+            # Create a new route
+            route = Route(warehouse=self.warehouse, customers=[])
+            current = self.warehouse
 
+            cost = 0
+            demand = 0
+
+            while True:
+                current, additional_cost, self._locationBuf = current.find_nearest_reachable(self._locationBuf, cost)
+
+                cost += additional_cost
+
+                # If no reachable customer is found
+                if not current:
+                    break
+
+                demand += current.demand
+
+                # Return if max_demand is reached
+                if demand > self.vehicleCapacity:
+                    # Add the current location back onto the list of locations
+                    self._locationBuf.append(current)
+                    break
+
+                route.customers.append(current)
+
+            # Append the route to the list of routes
+            self.routes.append(route)
         return self
 
     def plot(self) -> "Iteration":
