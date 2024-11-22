@@ -17,9 +17,14 @@ class Location:
     service: int
 
     def distance_to(self, other: "Location") -> float:
+        """Calculate the distance to travel from the current location to another location.
+            :arg other: The other location to calculate the distance to"""
         return sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
     def cost_to(self, other: "Location", current_cost: int = 0) -> float:
+        """Calculate the cost to travel from the current location to another location and add the waiting time at the target location.
+            :param current_cost: The cost that was already incurred before reaching this location
+            :arg other: The other location to calculate the cost to"""
         current_cost += self.distance_to(other)
 
         # Add potential waiting time
@@ -57,7 +62,7 @@ class Location:
         Optional["Location"], float, list["Location"]]:
         """Then find the neighbor that is the cheapest to deliver to from the current location, return it and the remaining list.
 
-            If no neighbor is found, return None.
+            If no suitable neighbor is found, return None.
 
             :arg others: list of locations to check
             :arg current_cost: Cost that was already incurred before reaching this location
