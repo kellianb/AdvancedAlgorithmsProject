@@ -30,16 +30,9 @@ class Location:
         """Find the closest neighbor to the current location in a list, return it and the remaining list.
             :arg others: list of locations to check
         """
-        distance_pairs = [(self.distance_to(record), record) for record in others]
+        closest = min(others, key=lambda x: self.distance_to(x))
 
-        # Sort by distance
-        distance_pairs.sort(key=itemgetter(0))
-
-        # First element is closest
-        closest = distance_pairs.pop(0)[1]
-
-        # Rest are the remaining locations
-        others = [pair[1] for pair in distance_pairs]
+        others.remove(closest)
 
         return closest, others
 
