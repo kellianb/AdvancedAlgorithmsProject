@@ -19,6 +19,9 @@ class Route:
 
     def len(self) -> float:
         """Calculate total route distance"""
+        if not self.customers:
+            return 0
+
         length = self.warehouse.distance_to(self.customers[0])
 
         for i in range(len(self.customers) - 1):
@@ -37,21 +40,25 @@ class Route:
         """Get total demand of all customers in the route"""
         return sum([customer.demand for customer in self.customers])
 
-    def cost(self) -> float:
+    def cost(self, customers: list[Location] = None) -> float:
         """Calculate total cost (distance and possible waiting time for package readiness)"""
+        if not self.customers:
+            return 0
 
-        cost = self.warehouse.distance_to(self.customers[0])
+        customers = customers if customers else self.customers
 
-        for i in range(len(self.customers) - 1):
+        cost = self.warehouse.distance_to(customers[0])
+
+        for i in range(len(customers) - 1):
             # If the truck arrives before the package is ready, it must wait
             # Since distance = time in our model, we add the waiting time to the cost
 
-            cost += max(self.customers[i].ready_time - cost, 0)
+            cost += max(customers[i].ready_time - cost, 0)
 
             # Add the travel distance to the next customer to the cost
-            cost += self.customers[i].distance_to(self.customers[i + 1])
+            cost += customers[i].distance_to(customers[i + 1])
 
-        cost += self.customers[-1].distance_to(self.warehouse)
+        cost += customers[-1].distance_to(self.warehouse)
 
         return cost
 
@@ -63,8 +70,8 @@ class Route:
 
         return min(lens, key=itemgetter(0))[1]
 
-    def print(self):
-        print("==== Route =====")
+    def print(self, name: str = "Route"):
+        print(f"==== {name} =====")
         print(f"Total demand: {self.demand()}")
         print(f"Total distance: {self.len()}")
         print(f"Total cost: {self.cost()}")
@@ -78,12 +85,12 @@ class Route:
         print("|")
 
 
-        cost += self.warehouse.distance_to(self.customers[0])
+        cost += self.warehouse.distance_to(self.customers[0]) if self.customers else 0
 
         for i in range(len(self.customers)):
             print("|")
             print(f"▼   Arrival: {cost}")
-            print(f"{'⌂ Customer ' + str(i+1) + '/' + str(len(self.customers)) :<30} ID: {self.customers[i].id}")
+            print(f"{'⌂ Customer ' + str(i + 1) + '/' + str(len(self.customers)) :<30} ID: {self.customers[i].id}")
 
             waiting_time = max(self.customers[i].ready_time - cost, 0)
             print(f"… Waiting Time: {waiting_time}")
@@ -93,7 +100,8 @@ class Route:
             if i < len(self.customers) - 1:
                 cost += self.customers[i].distance_to(self.customers[i + 1])
 
-        cost += self.customers[-1].distance_to(self.warehouse)
+        cost += self.customers[-1].distance_to(self.warehouse) if self.customers else 0
+
         print("|")
         print(f"▼   Arrival: {cost}")
         print(f"{'■ Warehouse':<30} ID: {self.warehouse.id}")
