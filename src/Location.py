@@ -5,7 +5,7 @@ from operator import itemgetter
 from typing import Optional
 
 
-@dataclass
+@dataclass(frozen=True)
 class Location:
     """Class for storing data about VRP locations."""
     id: int
@@ -15,15 +15,6 @@ class Location:
     ready_time: int
     due_date: int
     service: int
-
-    def __init__(self, id: int, x: int, y: int, demand: int, ready_time: int, due_date: int, service: int):
-        self.id = id
-        self.x = x
-        self.y = y
-        self.demand = demand
-        self.ready_time = ready_time
-        self.due_date = due_date
-        self.service = service
 
     def distance_to(self, other: "Location") -> float:
         return sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
