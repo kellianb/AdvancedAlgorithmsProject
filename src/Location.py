@@ -26,6 +26,23 @@ class Location:
         current_cost += max(other.ready_time - current_cost, 0)
         return current_cost
 
+    def find_reachable(self, others: list["Location"], current_cost: int = 0) -> list["Location"]:
+        """Find all neighbors whose delivery windows are reachable from the current location, return them.
+            :arg others: list of locations to check
+            :arg current_cost: Cost that was already incurred before reaching this location
+            :return List of reachable locations
+        """
+        return [loc for loc in deepcopy(others) if loc.due_date >= self.distance_to(loc) + current_cost]
+
+    def find_deliverable(self, others: list["Location"], capacity: int, current_cost: int = 0) -> list["Location"]:
+        """Find all neighbors whose delivery windows are reachable from the current location and whose demand can be fulfilled with the remaining truck capacity, return them.
+            :arg others: list of locations to check
+            :arg capacity: Available truck capacity
+            :arg current_cost: Cost that was already incurred before reaching this location
+            :return List of deliverable locations
+        """
+        return [loc for loc in self.find_reachable(others, current_cost) if loc.demand <= capacity]
+
     def find_closest(self, others: list["Location"]) -> tuple["Location", list["Location"]]:
         """Find the closest neighbor to the current location in a list, return it and the remaining list.
             :arg others: list of locations to check
@@ -48,7 +65,7 @@ class Location:
             """
 
         # Remove elements that cannot be reached
-        others_reachable = [loc for loc in deepcopy(others) if loc.due_date >= self.distance_to(loc) + current_cost]
+        others_reachable = self.find_reachable(others, current_cost)
 
         if not others_reachable:
             return None, current_cost, others
