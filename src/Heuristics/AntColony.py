@@ -1,14 +1,12 @@
-from copy import deepcopy
 from typing import Optional
 from src.Route import Route
 from src.Location import Location
 import numpy as np
 
-
 def construct_solution(alpha: int, beta: int, customers: list[Location], warehouse: Location, vehicle_capacity: int,
                        pheromones: dict) -> list[Route]:
     solution = []
-    unvisited = deepcopy(customers)
+    unvisited = customers
 
     # Generate vehicle routes
     while unvisited:
