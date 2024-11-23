@@ -151,3 +151,6 @@ NOTE: We will have to find a way to include the time window constraint into this
 - Fix time constraint
 - Look into : Local search, Ant colony, Variable neighbourhood search
 
+- Use nearest neighbor first, set all phermones to 1/cost of initial solution
+- Use ant colony system
+- Only use local search sparingly (only one or two iterations)

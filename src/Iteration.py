@@ -1,11 +1,11 @@
+from copy import deepcopy
 from dataclasses import dataclass
+from matplotlib import pyplot as plt
 from src.Location import Location
 from src.Route import Route
 import src.Heuristics.AntColony as AntColony
 from typing import Optional
 from multiprocessing import Pool
-
-
 
 
 @dataclass
@@ -34,7 +34,8 @@ class Iteration:
         self._ymax = max([loc.y for loc in self._locationBuf] + [self.warehouse.y]) + 10
 
     def nearest_neighbor_heuristic(self) -> "Iteration":
-        while self._locationBuf:
+        locations = deepcopy(self._locationBuf)
+        while locations:
             # Create a new route
             route = Route(warehouse=self.warehouse, customers=[])
             current = self.warehouse
@@ -43,7 +44,7 @@ class Iteration:
             demand = 0
 
             while True:
-                current, additional_cost, self._locationBuf = current.find_nearest_reachable(self._locationBuf, cost)
+                current, additional_cost, locations = current.find_nearest_reachable(locations, cost)
 
                 cost += additional_cost
 
@@ -56,7 +57,7 @@ class Iteration:
                 # Return if max_demand is reached
                 if demand > self.vehicleCapacity:
                     # Add the current location back onto the list of locations
-                    self._locationBuf.append(current)
+                    locations.append(current)
                     break
 
                 route.customers.append(current)
@@ -65,8 +66,10 @@ class Iteration:
             self.routes.append(route)
         return self
 
-    def aco_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float) -> "Iteration":
+    def aco_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float, plot: bool = False) -> list[
+        float]:
         """Generate VRP routes using the ACO heuristic
+            :param plot: plot the best cost history
             :param n_ants: Number of ants to use
             :param max_iter: Maximum number of iterations
             :param alpha: Alpha parameter, controls the influence of pheromones
@@ -77,17 +80,24 @@ class Iteration:
         pheromones = {}
         best_cost = float("inf")
         best_solution = None
+        best_cost_history = []
+
+        # Initialize pheromones
+        # Uses the result of a past heuristic as a starting point if available
+        pheromone_val = 1 / self.total_cost() if self.routes else 1
 
         for a in self._locationBuf + [self.warehouse]:
             for b in self._locationBuf + [self.warehouse]:
                 if b != a:
-                    pheromones[(a, b)] = 1
+                    pheromones[(a, b)] = pheromone_val
 
         # Run max_iter iterations
         with Pool() as pool:
             for _ in range(max_iter):
                 # Generate solutions concurrently
-                solutions = pool.starmap(AntColony.construct_solution, [(alpha, beta, self._locationBuf, self.warehouse, self.vehicleCapacity, pheromones) for _ in range(n_ants)])
+                solutions = pool.starmap(AntColony.construct_solution, [
+                    (alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
+                    in range(n_ants)])
 
                 self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
 
@@ -99,7 +109,12 @@ class Iteration:
                         best_cost = cost
                         best_solution = solution
 
-        self._locationBuf = []
+                best_cost_history.append(best_cost)
+
+        if plot:
+            plt.plot(range(len(best_cost_history)), best_cost_history)
+            plt.title('Best cost history')
+
         self.routes = best_solution
 
         return self
