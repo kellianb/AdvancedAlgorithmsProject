@@ -9,7 +9,7 @@ from multiprocessing import Pool
 
 
 @dataclass
-class Iteration:
+class Vrp:
     vehicleNumber: int
     vehicleCapacity: int
     warehouse: Location
@@ -33,7 +33,7 @@ class Iteration:
         self._xmax = max([loc.x for loc in self._locationBuf] + [self.warehouse.x]) + 10
         self._ymax = max([loc.y for loc in self._locationBuf] + [self.warehouse.y]) + 10
 
-    def nearest_neighbor_heuristic(self) -> "Iteration":
+    def nearest_neighbor_heuristic(self) -> "Vrp":
         locations = deepcopy(self._locationBuf)
         while locations:
             # Create a new route
@@ -150,7 +150,7 @@ class Iteration:
         routes = routes if routes else self.routes
         return sum([route.cost() for route in routes])
 
-    def print(self, routes: Optional[list[Route]] = None) -> "Iteration":
+    def print(self, routes: Optional[list[Route]] = None) -> "Vrp":
         """Print the details of the iteration"""
         routes = routes if routes else self.routes
         print("==== Iteration =====")
@@ -162,31 +162,33 @@ class Iteration:
             print("")
         return self
 
-    def cws_heuristic(self) -> "Iteration":
+    def cws_heuristic(self) -> "Vrp":
         # Step 1 : Initialize routes
-        routes = [Route(warehouse=self.warehouse, customers=[loc]) for loc in self._locationBuf] # Create a route for each location in the location buffer and add it to the routes list
+        routes = [Route(warehouse=self.warehouse, customers=[loc]) for loc in
+                  self._locationBuf]  # Create a route for each location in the location buffer and add it to the routes list
 
-        #Step 2 : Calculate the savings
+        # Step 2 : Calculate the savings
         savings = []
         for i in range(len(routes)):
-            for j in range(i + 1, len(routes)): # For each pair of routes
-                route_i = routes[i] # Get the first route
-                route_j = routes[j] # Get the second route
-                warehouse = self.warehouse # Get the warehouse location
-                loc_i = route_i.customers[-1] # Get the last customer of the first route
-                loc_j = route_j.customers[0] # Get the first customer of the second route
-                saving = warehouse.distance_to(loc_i) + warehouse.distance_to(loc_j) - loc_i.distance_to(loc_j) # Calculate the saving
-                savings.append((saving, route_i, route_j)) # Add the saving to the list of savings
+            for j in range(i + 1, len(routes)):  # For each pair of routes
+                route_i = routes[i]  # Get the first route
+                route_j = routes[j]  # Get the second route
+                warehouse = self.warehouse  # Get the warehouse location
+                loc_i = route_i.customers[-1]  # Get the last customer of the first route
+                loc_j = route_j.customers[0]  # Get the first customer of the second route
+                saving = warehouse.distance_to(loc_i) + warehouse.distance_to(loc_j) - loc_i.distance_to(
+                    loc_j)  # Calculate the saving
+                savings.append((saving, route_i, route_j))  # Add the saving to the list of savings
 
         # Step 3 : Sort the savings
-        savings.sort (reverse=True, key=lambda x: x[0]) # Sort the savings in descending order
+        savings.sort(reverse=True, key=lambda x: x[0])  # Sort the savings in descending order
 
-        #Step 4 : Merge routes based on savings
-        for saving , route_i, route_j in savings:
+        # Step 4 : Merge routes based on savings
+        for saving, route_i, route_j in savings:
             if route_i in routes and route_j in routes:
-                total_demand = route_i.demand() + route_j.demand() # Calculate the total demand of the two routes
+                total_demand = route_i.demand() + route_j.demand()  # Calculate the total demand of the two routes
                 if total_demand <= self.vehicleCapacity:  # Check if the total demand is less than or equal to the vehicle capacity
-                    merged_route = route_i.merge(route_j) # Merge the two routes into a single route
+                    merged_route = route_i.merge(route_j)  # Merge the two routes into a single route
                     routes.remove(route_i)
                     routes.remove(route_j)
                     routes.append(merged_route)
@@ -194,12 +196,7 @@ class Iteration:
         self.routes = routes
         return self
 
-
-
-
-
-
-    def plot(self) -> "Iteration":
+    def plot(self) -> "Vrp":
         for i in range(len(self.routes)):
             self.routes[i].plot(xmin=self._xmin, xmax=self._xmax, ymin=self._ymin, ymax=self._ymax,
                                 title=f"Route {i + 1}")
