@@ -162,6 +162,43 @@ class Iteration:
             print("")
         return self
 
+    def cws_heuristic(self) -> "Iteration":
+        # Step 1 : Initialize routes
+        routes = [Route(warehouse=self.warehouse, customers=[loc]) for loc in self._locationBuf] # Create a route for each location in the location buffer and add it to the routes list
+
+        #Step 2 : Calculate the savings
+        savings = []
+        for i in range(len(routes)):
+            for j in range(i + 1, len(routes)): # For each pair of routes
+                route_i = routes[i] # Get the first route
+                route_j = routes[j] # Get the second route
+                warehouse = self.warehouse # Get the warehouse location
+                loc_i = route_i.customers[-1] # Get the last customer of the first route
+                loc_j = route_j.customers[0] # Get the first customer of the second route
+                saving = warehouse.distance_to(loc_i) + warehouse.distance_to(loc_j) - loc_i.distance_to(loc_j) # Calculate the saving
+                savings.append((saving, route_i, route_j)) # Add the saving to the list of savings
+
+        # Step 3 : Sort the savings
+        savings.sort (reverse=True, key=lambda x: x[0]) # Sort the savings in descending order
+
+        #Step 4 : Merge routes based on savings
+        for saving , route_i, route_j in savings:
+            if route_i in routes and route_j in routes:
+                total_demand = route_i.demand() + route_j.demand() # Calculate the total demand of the two routes
+                if total_demand <= self.vehicleCapacity:  # Check if the total demand is less than or equal to the vehicle capacity
+                    merged_route = route_i.merge(route_j) # Merge the two routes into a single route
+                    routes.remove(route_i)
+                    routes.remove(route_j)
+                    routes.append(merged_route)
+
+        self.routes = routes
+        return self
+
+
+
+
+
+
     def plot(self) -> "Iteration":
         for i in range(len(self.routes)):
             self.routes[i].plot(xmin=self._xmin, xmax=self._xmax, ymin=self._ymin, ymax=self._ymax,
