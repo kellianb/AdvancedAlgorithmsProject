@@ -162,10 +162,20 @@ class Vrp:
             print("")
         return self
 
-    def cws_heuristic(self) -> "Vrp":
+    def cws_heuristic(self, solution: Optional[list[Route]] = []) -> "Vrp":
         # Step 1 : Initialize routes
-        routes = [Route(warehouse=self.warehouse, customers=[loc]) for loc in
-                  self._locationBuf]  # Create a route for each location in the location buffer and add it to the routes list
+        """routes = [
+            Route(warehouse=self.warehouse, customers=[loc])
+            for loc in self._locationBuf
+        ]  # Create a route for each location in the location buffer and add it to the routes list"""
+
+        routes = (
+            deepcopy(solution)
+            or [
+                Route(warehouse=self.warehouse, customers=[loc])
+                for loc in self._locationBuf
+            ]
+        )  # Create a route for each location in the location buffer and add it to the routes list
 
         # Step 2 : Calculate the savings
         savings = []
