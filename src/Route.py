@@ -36,6 +36,23 @@ class Route:
         self.customers += other.customers
         return self
 
+
+    def can_merge_with_time_windows(self, route_j: "Route") -> bool:
+        """Check if two routes can be merged while respecting time windows"""
+
+        # Simulate merging the routes and check time windows
+        current_time = 0
+        for loc in self.customers + route_j.customers:
+            arrival_time = current_time + self.warehouse.distance_to(loc)
+            if arrival_time < loc.ready_time:
+                arrival_time = loc.ready_time
+            if arrival_time > loc.due_date:
+                return False
+            current_time = arrival_time + loc.service
+        return True
+
+
+
     def demand(self) -> int:
         """Get total demand of all customers in the route"""
         return sum([customer.demand for customer in self.customers])
@@ -53,14 +70,34 @@ class Route:
             # If the truck arrives before the package is ready, it must wait
             # Since distance = time in our model, we add the waiting time to the cost
 
-            cost += max(customers[i].ready_time - cost, 0)
-
             # Add the travel distance to the next customer to the cost
             cost += customers[i].distance_to(customers[i + 1])
 
         cost += customers[-1].distance_to(self.warehouse)
 
         return cost
+
+    def cost_test(self, customers: list[Location] = None) -> float:
+        """Calculate total cost (distance and possible waiting time for package readiness)
+
+        """
+        if not self.customers:
+            return 0
+
+        customers = customers if customers else self.customers
+
+        cost = self.warehouse.cost_to(customers[0])
+
+        for i in range(len(customers) - 1):
+
+            cost += customers[i].cost_to(customers[i + 1])
+
+        cost += customers[-1].cost_to(self.warehouse)
+
+
+        return cost
+
+
 
     # Route solvers
     def brute_force(self):

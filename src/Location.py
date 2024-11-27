@@ -25,11 +25,14 @@ class Location:
         """Calculate the cost to travel from the current location to another location and add the waiting time at the target location.
             :param current_cost: The cost that was already incurred before reaching this location
             :arg other: The other location to calculate the cost to"""
+        current_cost += max(other.ready_time - current_cost, 0) # Waiting time at the customer
         current_cost += self.distance_to(other)
-
-        # Add potential waiting time
-        current_cost += max(other.ready_time - current_cost, 0)
+        current_cost += other.service
         return current_cost
+
+
+
+
 
     def find_reachable(self, others: list["Location"], current_cost: int = 0) -> list["Location"]:
         """Find all neighbors whose delivery windows are reachable from the current location, return them.
