@@ -22,7 +22,13 @@ class Vrp:
     _xmax: int
     _ymax: int
 
-    def __init__(self, warehouse: Location, locations: list[Location], vehicle_number: int, vehicle_capacity: int):
+    def __init__(
+        self,
+        warehouse: Location,
+        locations: list[Location],
+        vehicle_number: int,
+        vehicle_capacity: int,
+    ):
         self._locationBuf = locations
         self.warehouse = warehouse
         self.vehicleNumber = vehicle_number
@@ -34,6 +40,7 @@ class Vrp:
         self._ymax = max([loc.y for loc in self._locationBuf] + [self.warehouse.y]) + 10
 
     def nearest_neighbor_heuristic(self) -> "Vrp":
+        self.routes = []
         locations = deepcopy(self._locationBuf)
         while locations:
             # Create a new route
@@ -44,7 +51,9 @@ class Vrp:
             demand = 0
 
             while True:
-                current, additional_cost, locations = current.find_nearest_reachable(locations, cost)
+                current, additional_cost, locations = current.find_nearest_reachable(
+                    locations, cost
+                )
 
                 cost += additional_cost
 
@@ -66,15 +75,22 @@ class Vrp:
             self.routes.append(route)
         return self
 
-    def aco_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float, plot: bool = False) -> list[
-        float]:
+    def aco_heuristic(
+        self,
+        n_ants: int,
+        max_iter: int,
+        alpha: int,
+        beta: int,
+        rho: float,
+        plot: bool = False,
+    ) -> list[float]:
         """Generate VRP routes using the ACO heuristic
-            :param plot: plot the best cost history
-            :param n_ants: Number of ants to use
-            :param max_iter: Maximum number of iterations
-            :param alpha: Alpha parameter, controls the influence of pheromones
-            :param beta: Beta parameter, controls the influence of cost
-            :param rho: Rho parameter, controls the pheromone evaporation rate
+        :param plot: plot the best cost history
+        :param n_ants: Number of ants to use
+        :param max_iter: Maximum number of iterations
+        :param alpha: Alpha parameter, controls the influence of pheromones
+        :param beta: Beta parameter, controls the influence of cost
+        :param rho: Rho parameter, controls the pheromone evaporation rate
         """
         # Pheromone matrix : (a : b) -> pheromone level from location a to b
         pheromones = {}
@@ -92,42 +108,52 @@ class Vrp:
                     pheromones[(a, b)] = pheromone_val
 
         # Run max_iter iterations
-        with Pool() as pool:
-            for _ in range(max_iter):
-                # Generate solutions concurrently
-                solutions = pool.starmap(AntColony.construct_solution, [
-                    (alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
-                    in range(n_ants)])
+        for _ in range(max_iter):
+            solutions = []
+            # Generate solutions concurrently
+            for _ in range(n_ants):
+                solutions.append(
+                    AntColony.construct_solution(
+                        alpha,
+                        beta,
+                        deepcopy(self._locationBuf),
+                        self.warehouse,
+                        self.vehicleCapacity,
+                        pheromones,
+                    )
+                )
 
-                self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
+            self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
 
-                # Find the best solution
-                for solution in solutions:
-                    cost = self.total_cost(solution)
+            # Find the best solution
+            for solution in solutions:
+                cost = self.total_cost(solution)
 
-                    if cost < best_cost:
-                        best_cost = cost
-                        best_solution = solution
+                if cost < best_cost:
+                    best_cost = cost
+                    best_solution = solution
 
-                best_cost_history.append(best_cost)
+            best_cost_history.append(best_cost)
 
         if plot:
             plt.plot(range(len(best_cost_history)), best_cost_history)
-            plt.title('Best cost history')
+            plt.title("Best cost history")
 
         self.routes = best_solution
 
         return self
 
-    def _aco_heuristic_update_pheromones(self, solutions: list[list[Route]], rho: float, pheromones: dict):
+    def _aco_heuristic_update_pheromones(
+        self, solutions: list[list[Route]], rho: float, pheromones: dict
+    ):
         """Update the pheromone levels based on the routes taken
-            :arg routes: List of routes taken
-            :arg rho: Rho parameter, controls the pheromone evaporation rate
-            :arg pheromones: Pheromone matrix
+        :arg routes: List of routes taken
+        :arg rho: Rho parameter, controls the pheromone evaporation rate
+        :arg pheromones: Pheromone matrix
         """
         # Evaporate pheromones
         for key in pheromones.keys():
-            pheromones[key] *= (1 - rho)
+            pheromones[key] *= 1 - rho
 
         # Add pheromones to the edges taken
         for solution in solutions:
@@ -135,20 +161,24 @@ class Vrp:
 
             for route in solution:
                 # Add pheromones for the edges between the warehouse and the customers
-                pheromones[(self.warehouse, route.customers[0])] += deposit
 
                 # Add the pheromones for the edges between the customers
                 for i in range(len(route.customers) - 1):
                     pheromones[(route.customers[i], route.customers[i + 1])] += deposit
 
                 # Add pheromones for the edge between the last customer and the warehouse
-                pheromones[(route.customers[-1], self.warehouse)] += deposit
 
     def total_cost(self, routes: Optional[list[Route]] = None) -> float:
         """Calculate the total cost of all routes
         :arg routes: (Optional) List of routes to calculate the cost for, if left empty, the routes in the iteration are used"""
         routes = routes if routes else self.routes
         return sum([route.cost() for route in routes])
+
+    def total_distance(self, routes: Optional[list[Route]] = None) -> float:
+        """Calculate the total cost of all routes
+        :arg routes: (Optional) List of routes to calculate the cost for, if left empty, the routes in the iteration are used"""
+        routes = routes if routes else self.routes
+        return sum([route.distance() for route in routes])
 
     def print(self, routes: Optional[list[Route]] = None) -> "Vrp":
         """Print the details of the iteration"""
@@ -184,21 +214,63 @@ class Vrp:
                 route_i = routes[i]  # Get the first route
                 route_j = routes[j]  # Get the second route
                 warehouse = self.warehouse  # Get the warehouse location
-                loc_i = route_i.customers[-1]  # Get the last customer of the first route
-                loc_j = route_j.customers[0]  # Get the first customer of the second route
-                saving = warehouse.distance_to(loc_i) + warehouse.distance_to(loc_j) - loc_i.distance_to(
-                    loc_j)  # Calculate the saving
-                savings.append((saving, route_i, route_j))  # Add the saving to the list of savings
+                loc_i = route_i.customers[
+                    -1
+                ]  # Get the last customer of the first route
+                loc_j = route_j.customers[
+                    0
+                ]  # Get the first customer of the second route
+                saving = (
+                    warehouse.distance_to(loc_i)
+                    + warehouse.distance_to(loc_j)
+                    - loc_i.distance_to(loc_j)
+                )  # Calculate the saving
+                savings.append(
+                    (saving, route_i, route_j)
+                )  # Add the saving to the list of savings
+
+        """ for i in range(len(routes)):
+            for j in range(i + 1, len(routes)):  # For each pair of routes
+                route_i = routes[i]  # Get the first route
+                route_j = routes[j]  # Get the second route
+                warehouse = self.warehouse  # Get the warehouse location
+                loc_i = route_i.customers[
+                    -1
+                ]  # Get the last customer of the first route
+                loc_j = route_j.customers[
+                    0
+                ]  # Get the first customer of the second route
+                print(f"Location i : {loc_i}")
+                print(f"Route i : {route_i}")
+                print(f"Location j :{loc_j}")
+                print(f"Route j : {route_j}")
+                saving = (
+                    warehouse.distance_to(loc_i)
+                    + warehouse.distance_to(loc_j)
+                    - loc_i.distance_to(loc_j)
+                )  # Calculate the saving
+                savings.append(
+                    (saving, route_i, route_j)
+                )  # Add the saving to the list of savings """
 
         # Step 3 : Sort the savings
-        savings.sort(reverse=True, key=lambda x: x[0])  # Sort the savings in descending order
+        savings.sort(
+            reverse=True, key=lambda x: x[0]
+        )  # Sort the savings in descending order
 
         # Step 4 : Merge routes based on savings
         for saving, route_i, route_j in savings:
             if route_i in routes and route_j in routes:
-                total_demand = route_i.demand() + route_j.demand()  # Calculate the total demand of the two routes
-                if total_demand <= self.vehicleCapacity:  # Check if the total demand is less than or equal to the vehicle capacity
-                    merged_route = route_i.merge(route_j)  # Merge the two routes into a single route
+                total_demand = (
+                    route_i.demand() + route_j.demand()
+                )  # Calculate the total demand of the two routes
+                if (
+                    total_demand <= self.vehicleCapacity
+                    and route_i.can_merge_with_time_windows(route_j)
+                ):  # Check if the total demand is less than or equal to the vehicle capacity
+                    merged_route = route_i.merge(
+                        route_j
+                    )  # Merge the two routes into a single route
                     routes.remove(route_i)
                     routes.remove(route_j)
                     routes.append(merged_route)
@@ -208,6 +280,11 @@ class Vrp:
 
     def plot(self) -> "Vrp":
         for i in range(len(self.routes)):
-            self.routes[i].plot(xmin=self._xmin, xmax=self._xmax, ymin=self._ymin, ymax=self._ymax,
-                                title=f"Route {i + 1}")
+            self.routes[i].plot(
+                xmin=self._xmin,
+                xmax=self._xmax,
+                ymin=self._ymin,
+                ymax=self._ymax,
+                title=f"Route {i + 1}",
+            )
         return self
