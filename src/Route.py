@@ -45,20 +45,12 @@ class Route:
         if not self.customers:
             return 0
 
-        customers = customers if customers else self.customers
+        cost = self.warehouse.cost_to(self.customers[0])
 
-        cost = self.warehouse.distance_to(customers[0])
+        for i in range(len(self.customers) - 1):
+            cost = self.customers[i].cost_to(self.customers[i + 1], cost)
 
-        for i in range(len(customers) - 1):
-            # If the truck arrives before the package is ready, it must wait
-            # Since distance = time in our model, we add the waiting time to the cost
-
-            cost += max(customers[i].ready_time - cost, 0)
-
-            # Add the travel distance to the next customer to the cost
-            cost += customers[i].distance_to(customers[i + 1])
-
-        cost += customers[-1].distance_to(self.warehouse)
+        cost = self.customers[-1].cost_to(self.warehouse, cost)
 
         return cost
 
@@ -95,6 +87,8 @@ class Route:
             waiting_time = max(self.customers[i].ready_time - cost, 0)
             print(f"… Waiting Time: {waiting_time}")
             cost += waiting_time
+            print(f"… Service Time: {self.customers[i].service}")
+            cost += self.customers[i].service
             print(f"|   Departure: {cost}")
             print("|")
             if i < len(self.customers) - 1:
