@@ -21,7 +21,7 @@ class Location:
             :arg other: The other location to calculate the distance to"""
         return sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
-    def cost_to(self, other: "Location", current_cost: int = 0) -> float:
+    def cost_to(self, other: "Location", current_cost: float = 0) -> float:
         """Calculate the cost to travel from the current location to another location and add the waiting time at the target location.
             :param current_cost: The cost that was already incurred before reaching this location
             :arg other: The other location to calculate the cost to"""
@@ -29,6 +29,9 @@ class Location:
 
         # Add potential waiting time
         current_cost += max(other.ready_time - current_cost, 0)
+
+        # Add service time
+        current_cost += other.service
         return current_cost
 
     def find_reachable(self, others: list["Location"], current_cost: int = 0) -> list["Location"]:
