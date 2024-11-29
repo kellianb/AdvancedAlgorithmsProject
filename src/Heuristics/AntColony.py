@@ -66,7 +66,7 @@ def _select_next_location(current: Location, unvisited: list[Location], current_
         # Desirability of next_loc
         desirability = (1 / cost)
 
-        probabilities[next_loc] = (pheromone ** alpha) * (desirability ** beta)
+        probabilities[next_loc] = (pheromone ** alpha) * (desirability ** beta) + 1e-6
 
     # Normalize the probabilities
     total = sum(probabilities.values())

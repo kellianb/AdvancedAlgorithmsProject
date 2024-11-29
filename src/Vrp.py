@@ -5,8 +5,6 @@ from src.Location import Location
 from src.Route import Route
 import src.Heuristics.AntColony as AntColony
 from typing import Optional
-from multiprocessing import Pool
-
 
 @dataclass
 class Vrp:
@@ -16,7 +14,7 @@ class Vrp:
     routes: list[Route]
     _locationBuf: list[Location]
 
-    # Required for plotting
+# Required for plotting
     _xmin: int
     _ymin: int
     _xmax: int
@@ -66,8 +64,7 @@ class Vrp:
             self.routes.append(route)
         return self
 
-    def aco_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float, plot: bool = False) -> list[
-        float]:
+    def aco_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float, plot: bool = False) -> "Vrp":
         """Generate VRP routes using the ACO heuristic
             :param plot: plot the best cost history
             :param n_ants: Number of ants to use
@@ -75,6 +72,7 @@ class Vrp:
             :param alpha: Alpha parameter, controls the influence of pheromones
             :param beta: Beta parameter, controls the influence of cost
             :param rho: Rho parameter, controls the pheromone evaporation rate
+            :param plot: Plot the best cost history
         """
         # Pheromone matrix : (a : b) -> pheromone level from location a to b
         pheromones = {}
@@ -92,24 +90,22 @@ class Vrp:
                     pheromones[(a, b)] = pheromone_val
 
         # Run max_iter iterations
-        with Pool() as pool:
-            for _ in range(max_iter):
-                # Generate solutions concurrently
-                solutions = pool.starmap(AntColony.construct_solution, [
-                    (alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
-                    in range(n_ants)])
+        for _ in range(max_iter):
+            # Generate solutions concurrently
+            solutions = [AntColony.construct_solution(alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
+                in range(n_ants)]
 
-                self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
+            self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
 
-                # Find the best solution
-                for solution in solutions:
-                    cost = self.total_cost(solution)
+            # Find the best solution
+            for solution in solutions:
+                cost = self.total_cost(solution)
 
-                    if cost < best_cost:
-                        best_cost = cost
-                        best_solution = solution
+                if cost < best_cost:
+                    best_cost = cost
+                    best_solution = solution
 
-                best_cost_history.append(best_cost)
+            best_cost_history.append(best_cost)
 
         if plot:
             plt.plot(range(len(best_cost_history)), best_cost_history)
