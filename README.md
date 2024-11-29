@@ -95,6 +95,9 @@ x_{ijk} = \begin{cases} 1 & \text{if truck } k \text{ goes from vertex } i \text
 
 ### Deliveries have to be made during the delivery time window
 
+$s_i + t_{ij} - M \times (1 - x_{ijk}) \leq s_j$
+$M = \max \{e_i + t_{ij} - o_j\}$
+
 $o(j) \leq t_{kj} \le e(j)$
 $\quad\quad \forall x_{ijk} = 1,$
 $\quad\quad i,j \in \{1, ..., n\}$
