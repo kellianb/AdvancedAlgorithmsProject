@@ -5,9 +5,9 @@
 - Maxime Haas
 
 # Introduction
-In the **Vehicle Routing Problem (VRP)**, a set number of customers have to be delivered to by a set amount of delivery trucks.
+In the **Vehicle Routing Problem with Time Windows (VRPTW)**, a set number of customers have to be delivered to by a set amount of delivery trucks.
 
-The **VRP** is and extension of the **Traveling Salesman Problem (TSP)** with multiple entities (trucks) making deliveries 
+The **VRPTW** is and extension of the **Traveling Salesman Problem (TSP)** with multiple entities (trucks) making deliveries 
 at the same time instead of only one salesman. 
 Furthermore, additional restrictions such as delivery time windows or truck capacity are often imposed.
 
@@ -125,7 +125,7 @@ In this section, we will prove that VRPTW is in NP and NP-Complete.
 To prove VRPTW is in NP, we show that any certificate to the problem can be verified in polynomial time. 
 The decision problem is: 
 
-*Given a solution, is it an admissible solution to the VRPTW problem?*
+*Given a VRPTW $G$ and a certificate $s$, is $s$ an admissible solution to $G$?*
 
 ### Certificate
 The VRPTW certificate is a set of routes, each of which is an ordered list of nodes $v \in V$.
@@ -147,43 +147,38 @@ A solution of VRPTW can be verified in polynomial time, so **VRPTW is in NP**.
 
 ## VRPTW is NP-Complete
 
-To prove VRPTW is NP-Complete, we reduce a known NP-complete problem (TSP) to VRPTW in polynomial time.
+To prove VRPTW is NP-Complete, we will reduce a known NP-complete problem (TSP) to VRPTW in polynomial time.
 
 ### TSP Definition
-TSP is defined on a graph $G = (V, E)$ with a cost matrix $C = [c_{ij}]$. The objective is to find a minimum-cost Hamiltonian circuit that visits each node exactly once and returns to the starting node.
+TSP is defined on a graph $G = (V, E)$ with a cost matrix $C = [c_{ij}]$. 
+The objective is to find a minimum-cost Hamiltonian circuit that visits each node exactly once and returns to the starting node.
 
 ### VRPTW Reducibility to TSP
 
 The Vehicle Routing Problem (VRP) can be reduced to the Traveling Salesman Problem with time windows (TSP) in polynomial time, proving that VRPTW shares the same complexity class as TSP, which is NP-complete.
 
-| **TSP**                                   | **VRP**                                      |
-|-------------------------------------------|----------------------------------------------|
-| One traveller                             | Several vehicles                             |
-| Unlimited capacity (single trip)          | Truck capacity (multiple trips may be needed)|
-| No time restrictions                      | Time slots for each delivery point           |
+| **TSP**                          | **VRPTW**                                    |
+|:---------------------------------|----------------------------------------------|
+| One traveller                    | Several vehicles                             |
+| Unlimited capacity (single trip) | Truck capacity (multiple trips may be needed) |
+| No time restrictions             | Time slots for each delivery point           |
+| No capcity restrictions          | Each truck has a set capacity                |
 
 
-### Mapping TSP to VRP
-- Given an instance of TSP, we construct an equivalent instance of VRP:
-  - Set the vehicle capacity $Q_k$ to a sufficiently large value so that a single vehicle can serve all customers (i.e., $Q \geq \sum_{v \in V} d(v)$).
-  - Assign demand $d(v) = 1$ for each customer $v \in V$, ensuring the vehicle can "carry" all nodes in a single trip.
-  - Set the depot as any node $v_0 \in V$.
+### Mapping TSP to VRPTW
+Given an instance of TSP, we construct an equivalent instance of VRPTW:
+- Set the number of vehicles to $p = 1$.
+- Set the vehicle capacity $Q_k$ to a sufficiently large value so that a single vehicle can serve all customers (i.e., $\displaystyle Q \geq \sum^{v \in V} d(v)$).
+- Assign demand $d(v) = 1$ for each customer $v \in V$, ensuring the vehicle can transport all packages in a single trip.
+- Set the depot as any node $v_0 \in V$.
+- Set the service time of each customer to $0$.
+- Set the delivery time window for each customer to $[0, \infty[$, allowing the vehicle to visit any customer at any time.
 
-If the restrictions for VRPTW are removed, it reduces to TSP, as the problem becomes finding a Hamiltonian circuit (visiting each node exactly once and returning to the starting point).
-
-VRPTW can be reduced to TSP → VRPTW has the same complexity as TSP.
-
-Therefore, as TSP is NP-complete (as proven in Workshop 2), VRPTW is also NP-complete.
-
-
-### Implications
-- Solving this instance of VRPTW requires finding a minimum-cost route that visits each node exactly once. This is equivalent to solving the TSP on the original graph $G$.
-- Therefore, solving VRPTW in this context also solves TSP.
+TSP can therefore be reduced to VRPTW.
 
 ## Conclusion
-VRPTW is in NP and is reducible to a known NP-Complete problem, placing it in the NP-Complete complexity class.
+VRPTW is in NP and a known NP-Complete problem is reductible to VRPTW, proving that the VRPTW is in the NP-Complete complexity class.
 
-As VRPTW is an optimization problem it is also NP-Hard.
 
 # Ant Hill Meta-heuristic
 
