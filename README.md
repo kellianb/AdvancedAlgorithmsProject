@@ -107,7 +107,64 @@ $Min\displaystyle\sum_{k=1}^p\sum_{i=1}^n\sum_{i=1}^n w(i,j)x_{ijk}$
 
 
 # Proof that the VRP is NP-hard
-First of all, since the VRP is not a decision problem, but an optimization problem, it cannot be NP-complete.
+
+# Complexity
+
+## VRP Reducibility to TSP
+
+The Vehicle Routing Problem (VRP) can be reduced to the Traveling Salesman Problem (TSP) in polynomial time, proving that VRP shares the same complexity class as TSP, which is NP-complete.
+
+| **TSP**                                   | **VRP**                                      |
+|-------------------------------------------|----------------------------------------------|
+| One traveller                             | Several vehicles                             |
+| Unlimited capacity (single trip)          | Truck capacity (multiple trips may be needed)|
+| No time restrictions                      | Time slots for each delivery point           |
+
+- If the restrictions for VRP are removed, it reduces to TSP, as the problem becomes finding a Hamiltonian cycle (visiting each node exactly once and returning to the starting point).
+- **Conclusion**: VRP can be reduced to TSP → VRP has the same complexity as TSP.
+- TSP is NP-complete (as proven in Workshop 2) → VRP is NP-complete.
+
+---
+
+## Proof that VRP is in NP and is NP-Complete
+
+### VRP is in NP
+
+**NP Verification**  
+To prove VRP is in NP, we show that any "yes" answer to the problem can be verified in polynomial time. The decision problem is: *Given a solution, is it an admissible solution to the VRP problem?*
+
+1. **Certificate**: The VRP certificate is a set of routes, each of which is an ordered list of nodes (depots and customers).
+2. **Verification Process**:
+- **Capacity Check**: Ensure the total demand on each route does not exceed the vehicle's capacity $Q_k$. This step takes $O(|V|)$ time for each route.
+- **Customer Visit Check**: Ensure every customer $v \in V \setminus \{v_0\}$ is visited exactly once across all routes. This can be verified in $O(|V|)$ time by marking nodes as visited.
+- **Cost Calculation**: Sum the costs $c_{ij}$ for all edges in the routes and check if it matches the given solution cost. This step takes $O(|E|)$ time, as each edge is processed once.
+3. **Polynomial Time**: Since all verification steps (capacity check, visit check, and cost calculation) can be performed in polynomial time relative to the size of the input, VRP is in NP.
+
+**Conclusion**: A "yes" instance of VRP can be verified in polynomial time, so **VRP is in NP**.
+
+---
+
+### VRP is NP-Complete
+
+To prove VRP is NP-Complete, we reduce a known NP-complete problem (TSP) to VRP in polynomial time.
+
+**Reduction from TSP to VRP**
+1. **TSP Definition**:
+- TSP is defined on a graph $G = (V, E)$ with a cost matrix $C = [c_{ij}]$. The objective is to find a minimum-cost Hamiltonian cycle that visits each node exactly once and returns to the starting node.
+
+2. **Mapping TSP to VRP**:
+- Given an instance of TSP, we construct an equivalent instance of VRP:
+  - Set the vehicle capacity $Q_k$ to a sufficiently large value so that a single vehicle can serve all customers (i.e., $Q \geq \sum_{v \in V} d(v)$).
+  - Assign demand $d(v) = 1$ for each customer $v \in V$, ensuring the vehicle can "carry" all nodes in a single trip.
+  - Set the depot as any node $v_0 \in V$.
+
+3. **Implications**:
+- Solving this instance of VRP requires finding a minimum-cost route that visits each node exactly once. This is equivalent to solving the TSP on the original graph $G$.
+- Therefore, solving VRP in this context also solves TSP.
+
+4. **Conclusion**:
+- Since TSP reduces to VRP and TSP is NP-complete, it follows that **VRP is NP-Complete**.
+- VRP is in NP and is NP-Complete, placing it in the complexity class NP-Complete.
 
 # Ant Hill Meta-heuristic
 
