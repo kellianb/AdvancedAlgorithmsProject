@@ -1,3 +1,9 @@
+# Group 3
+Bechtel, Kellian
+Ferrand, Guillaume
+Grummann, Emma
+Haas, Maxime
+
 # Introduction
 In the **Vehicle Routing Problem (VRP)**, a set number of customers have to be delivered to by a set amount of delivery trucks.
 
@@ -55,7 +61,9 @@ We also define the following variables:
 - $p$ : Number of trucks in the fleet
 - $k$ : This variable will be used to represent different trucks in our fleet
 - $Q_k$ : Capacity of the truck $k$
-- $t_{ki}$ : Arrival time of truck $k$ at node $i$
+- $t_{ki}$ : Arrival time of truck $k$ at vertex $i$
+- $s_i$ : service time of vertex $i$
+- $m_{ij}$ : travel time from vertex $i$ to vertex $j$
 
 ## Decision variables
 - $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution.
@@ -95,9 +103,8 @@ x_{ijk} = \begin{cases} 1 & \text{if truck } k \text{ goes from vertex } i \text
 
 ### Deliveries have to be made during the delivery time window
 
-$o(j) \leq t_{kj} \le e(j)$
-$\quad\quad \forall x_{ijk} = 1,$
-$\quad\quad i,j \in \{1, ..., n\}$
+$t_{ki} + s_i + m_{ij} - M \times (1 - x_{ijk}) \leq t_{kj}
+\quad M = \max \{e_i + s_i + m_{ij} - o_j\}$
 
 ## Fitness function
 $Min\displaystyle\sum_{k=1}^p\sum_{i=1}^n\sum_{i=1}^n w(i,j)x_{ijk}$
