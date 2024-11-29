@@ -6,6 +6,7 @@ from src.Route import Route
 import src.Heuristics.AntColony as AntColony
 from typing import Optional
 
+
 @dataclass
 class Vrp:
     vehicleNumber: int
@@ -14,7 +15,7 @@ class Vrp:
     routes: list[Route]
     _locationBuf: list[Location]
 
-# Required for plotting
+    # Required for plotting
     _xmin: int
     _ymin: int
     _xmax: int
@@ -92,8 +93,8 @@ class Vrp:
         # Run max_iter iterations
         for _ in range(max_iter):
             # Generate solutions concurrently
-            solutions = [AntColony.construct_solution(alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
-                in range(n_ants)]
+            solutions = [AntColony.construct_solution(alpha, beta, deepcopy(self._locationBuf), self.warehouse,
+                                                      self.vehicleCapacity, pheromones) for _ in range(n_ants)]
 
             self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
 
@@ -140,8 +141,7 @@ class Vrp:
                 # Add pheromones for the edge between the last customer and the warehouse
                 pheromones[(route.customers[-1], self.warehouse)] += deposit
 
-    def acs_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float, plot: bool = False) -> list[
-        float]:
+    def acs_heuristic(self, n_ants: int, max_iter: int, alpha: int, beta: int, rho: float, plot: bool = False) -> "Vrp":
         """Generate VRP routes using the ACO heuristic
             :param plot: plot the best cost history
             :param n_ants: Number of ants to use
@@ -166,24 +166,24 @@ class Vrp:
                     pheromones[(a, b)] = pheromone_val
 
         # Run max_iter iterations
-        with Pool() as pool:
-            for _ in range(max_iter):
-                # Generate solutions concurrently
-                solutions = pool.starmap(AntColony.construct_solution, [
-                    (alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
-                    in range(n_ants)])
+        for _ in range(max_iter):
+            # Generate solutions concurrently
 
-                self._acs_heuristic_update_pheromones(solutions, rho, pheromones, deepcopy(self._locationBuf), pheromone_val)
+            solutions = [AntColony.construct_solution(alpha, beta, deepcopy(self._locationBuf), self.warehouse,
+                                                      self.vehicleCapacity, pheromones) for _ in range(n_ants)]
 
-                # Find the best solution
-                for solution in solutions:
-                    cost = self.total_cost(solution)
+            self._acs_heuristic_update_pheromones(solutions, rho, pheromones, deepcopy(self._locationBuf),
+                                                  pheromone_val)
 
-                    if cost < best_cost:
-                        best_cost = cost
-                        best_solution = solution
+            # Find the best solution
+            for solution in solutions:
+                cost = self.total_cost(solution)
 
-                best_cost_history.append(best_cost)
+                if cost < best_cost:
+                    best_cost = cost
+                    best_solution = solution
+
+            best_cost_history.append(best_cost)
 
         if plot:
             plt.plot(range(len(best_cost_history)), best_cost_history)
@@ -193,7 +193,8 @@ class Vrp:
 
         return self
 
-    def _acs_heuristic_update_pheromones(self, solutions: list[list[Route]], rho: float, pheromones: dict, customers: list[Location], initial_solution: float):
+    def _acs_heuristic_update_pheromones(self, solutions: list[list[Route]], rho: float, pheromones: dict,
+                                         customers: list[Location], initial_solution: float):
         """Update the pheromone levels based on the routes taken
             :arg routes: List of routes taken
             :arg rho: Rho parameter, controls the pheromone evaporation rate
@@ -201,39 +202,41 @@ class Vrp:
         """
         # Evaporate pheromones
         for key in pheromones.keys():
-            pheromones[key] = (1 - rho)*pheromones[key] + rho*(1/len(customers)*initial_solution)
+            pheromones[key] = (1 - rho) * pheromones[key] + rho * (1 / len(customers) * initial_solution)
 
         # Identify the best solution in this iteration
         best_solution = min(solutions, key=lambda sol: self.total_cost(sol))
         best_cost = self.total_cost(best_solution)
 
-
         # Intensify pheromones for the best solution
         for route in best_solution:
             # Add pheromones for the edges between the warehouse and the customers in the best solution
-            pheromones[(self.warehouse, route.customers[0])] = (1-rho)*pheromones[(self.warehouse, route.customers[0])] + rho/best_cost
+            pheromones[(self.warehouse, route.customers[0])] = (1 - rho) * pheromones[
+                (self.warehouse, route.customers[0])] + rho / best_cost
 
             # Add the pheromones for the edges between the customers in the best solution
             for i in range(len(route.customers) - 1):
-                pheromones[(route.customers[i], route.customers[i + 1])] = (1-rho)*pheromones[(route.customers[i], route.customers[i + 1])] + rho/best_cost
+                pheromones[(route.customers[i], route.customers[i + 1])] = (1 - rho) * pheromones[
+                    (route.customers[i], route.customers[i + 1])] + rho / best_cost
 
             # Add pheromones for the edge between the last customer and the warehouse in the best solution
-            pheromones[(route.customers[-1], self.warehouse)] = (1-rho)*pheromones[(route.customers[-1], self.warehouse)] + rho/best_cost
+            pheromones[(route.customers[-1], self.warehouse)] = (1 - rho) * pheromones[
+                (route.customers[-1], self.warehouse)] + rho / best_cost
 
         # Add pheromones to the edges taken
-        #for solution in solutions:
-            #deposit = 1 / self.total_cost(solution)
+        # for solution in solutions:
+        # deposit = 1 / self.total_cost(solution)
 
-            #for route in solution:
-                # Add pheromones for the edges between the warehouse and the customers
-                #pheromones[(self.warehouse, route.customers[0])] += deposit
+        # for route in solution:
+        # Add pheromones for the edges between the warehouse and the customers
+        # pheromones[(self.warehouse, route.customers[0])] += deposit
 
-                # Add the pheromones for the edges between the customers
-                #for i in range(len(route.customers) - 1):
-                    #pheromones[(route.customers[i], route.customers[i + 1])] += deposit
+        # Add the pheromones for the edges between the customers
+        # for i in range(len(route.customers) - 1):
+        # pheromones[(route.customers[i], route.customers[i + 1])] += deposit
 
-                # Add pheromones for the edge between the last customer and the warehouse
-                #pheromones[(route.customers[-1], self.warehouse)] += deposit
+        # Add pheromones for the edge between the last customer and the warehouse
+        # pheromones[(route.customers[-1], self.warehouse)] += deposit
 
     def total_cost(self, routes: Optional[list[Route]] = None) -> float:
         """Calculate the total cost of all routes
