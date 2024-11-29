@@ -1,8 +1,9 @@
 from copy import deepcopy
 from math import sqrt
 from dataclasses import dataclass
-from operator import itemgetter
 from typing import Optional
+
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -20,6 +21,10 @@ class Location:
         """Calculate the distance to travel from the current location to another location.
             :arg other: The other location to calculate the distance to"""
         return sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
+
+    def distance_to_test(self, other: "Location", distance_matrix: np.ndarray, current_cost: int = 0) -> float :
+        """ Get the precomputed distance from the distance matrix"""
+        return distance_matrix[self.id][other.id].item() + current_cost
 
     def cost_to(self, other: "Location", current_cost: int = 0) -> float:
         """Calculate the cost to travel from the current location to another location and add the waiting time at the target location.

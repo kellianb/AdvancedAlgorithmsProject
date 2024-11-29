@@ -42,13 +42,13 @@ class Route:
 
         # Simulate merging the routes and check time windows
         current_time = 0
-        for loc in self.customers + route_j.customers:
-            arrival_time = current_time + self.warehouse.distance_to(loc)
-            if arrival_time < loc.ready_time:
-                arrival_time = loc.ready_time
+        for loc in self.customers + route_j.customers: # Concatenate the customers of both routes to simulate the merge
+            arrival_time = current_time + self.warehouse.distance_to(loc) # Calculate the arrival time at the location
+            if arrival_time < loc.ready_time: # If the truck arrives before the package is ready, it must wait
+                arrival_time = loc.ready_time # Set the arrival time to the package ready time
             if arrival_time > loc.due_date:
                 return False
-            current_time = arrival_time + loc.service
+            current_time = arrival_time + loc.service # Calculate the departure time from the location
         return True
 
 
@@ -57,27 +57,27 @@ class Route:
         """Get total demand of all customers in the route"""
         return sum([customer.demand for customer in self.customers])
 
-    def cost(self, customers: list[Location] = None) -> float:
+    def distance(self, customers: list[Location] = None) -> float:
         """Calculate total cost (distance and possible waiting time for package readiness)"""
         if not self.customers:
             return 0
 
         customers = customers if customers else self.customers
 
-        cost = self.warehouse.distance_to(customers[0])
+        distance = self.warehouse.distance_to(customers[0])
 
         for i in range(len(customers) - 1):
             # If the truck arrives before the package is ready, it must wait
             # Since distance = time in our model, we add the waiting time to the cost
 
             # Add the travel distance to the next customer to the cost
-            cost += customers[i].distance_to(customers[i + 1])
+            distance += customers[i].distance_to(customers[i + 1])
 
-        cost += customers[-1].distance_to(self.warehouse)
+        distance += customers[-1].distance_to(self.warehouse)
 
-        return cost
+        return distance
 
-    def cost_test(self, customers: list[Location] = None) -> float:
+    def cost(self, customers: list[Location] = None) -> float:
         """Calculate total cost (distance and possible waiting time for package readiness)
 
         """

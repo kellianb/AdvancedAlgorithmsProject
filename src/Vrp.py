@@ -6,6 +6,7 @@ from src.Route import Route
 import src.Heuristics.AntColony as AntColony
 from typing import Optional
 from multiprocessing import Pool
+import numpy as np
 
 
 @dataclass
@@ -32,6 +33,21 @@ class Vrp:
         self._ymin = min([loc.y for loc in self._locationBuf] + [self.warehouse.y]) - 10
         self._xmax = max([loc.x for loc in self._locationBuf] + [self.warehouse.x]) + 10
         self._ymax = max([loc.y for loc in self._locationBuf] + [self.warehouse.y]) + 10
+        self.distance_matrix = self.create_distance_matrix()
+
+    def create_distance_matrix(self) -> np.ndarray:
+        """Create a distance matrix for all locations including the warehouse"""
+        all_locations = [self.warehouse] + self._locationBuf # Include the warehouse in the list of locations
+        n = len(all_locations) # Number of locations
+        distance_matrix = np.zeros((n, n)) # Initialize the distance matrix
+
+        for i in range(n):
+            for j in range(n):
+                distance_matrix[i, j] = all_locations[i].distance_to(all_locations[j]) # Calculate the distance between the locations and store it in the matrix
+
+        return distance_matrix
+
+
 
     def nearest_neighbor_heuristic(self) -> "Vrp":
         locations = deepcopy(self._locationBuf)
@@ -96,7 +112,7 @@ class Vrp:
             for _ in range(max_iter):
                 # Generate solutions concurrently
                 solutions = pool.starmap(AntColony.construct_solution, [
-                    (alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones) for _
+                    (alpha, beta, deepcopy(self._locationBuf), self.warehouse, self.vehicleCapacity, pheromones, self.distance_matrix) for _
                     in range(n_ants)],chunksize=100)
 
                 self._aco_heuristic_update_pheromones(solutions, rho, pheromones)
@@ -117,7 +133,7 @@ class Vrp:
 
         self.routes = best_solution
 
-        return self
+        return self # Return the best cost history
 
     def _aco_heuristic_update_pheromones(self, solutions: list[list[Route]], rho: float, pheromones: dict):
         """Update the pheromone levels based on the routes taken
@@ -150,11 +166,11 @@ class Vrp:
         routes = routes if routes else self.routes
         return sum([route.cost() for route in routes])
 
-    def total_cost_test(self, routes: Optional[list[Route]] = None) -> float:
-        """Calculate the total cost of all routes
+    def total_distance(self, routes: Optional[list[Route]] = None) -> float:
+        """Calculate the total distance of all routes
         :arg routes: (Optional) List of routes to calculate the cost for, if left empty, the routes in the iteration are used"""
         routes = routes if routes else self.routes
-        return sum([route.cost_test() for route in routes])
+        return sum([route.distance() for route in routes])
 
     def print(self, routes: Optional[list[Route]] = None) -> "Vrp":
         """Print the details of the iteration"""
@@ -202,9 +218,25 @@ class Vrp:
         self.routes = routes
         return self
 
-
     def plot(self) -> "Vrp":
+        fig, ax = plt.subplots(figsize=(10, 8))
+
         for i in range(len(self.routes)):
             self.routes[i].plot(xmin=self._xmin, xmax=self._xmax, ymin=self._ymin, ymax=self._ymax,
                                 title=f"Route {i + 1}")
+            # Plot all routes on the same figure
+            path_x = [self.routes[i].warehouse.x] + [c.x for c in self.routes[i].customers] + [self.routes[i].warehouse.x]
+            path_y = [self.routes[i].warehouse.y] + [c.y for c in self.routes[i].customers] + [self.routes[i].warehouse.y]
+            ax.plot(path_x, path_y, label=f'Route {i + 1}')
+
+        ax.set_title("All Routes")
+        ax.set_xlabel('X Coordinate')
+        ax.set_ylabel('Y Coordinate')
+        ax.legend()
+        ax.grid(True, linestyle=':', alpha=0.6)
+        plt.tight_layout()
+        plt.show()
+
         return self
+
+

@@ -4,7 +4,7 @@ from src.Location import Location
 import numpy as np
 
 def construct_solution(alpha: int, beta: int, customers: list[Location], warehouse: Location, vehicle_capacity: int,
-                       pheromones: dict) -> list[Route]:
+                       pheromones: dict, distance_matrix: np.ndarray) -> list[Route]:
     solution = []
     unvisited = customers
 
@@ -20,14 +20,14 @@ def construct_solution(alpha: int, beta: int, customers: list[Location], warehou
         while total_route_demand < vehicle_capacity:
             next_loc = _select_next_location(current, unvisited, current_cost,
                                              vehicle_capacity - total_route_demand, alpha, beta,
-                                             pheromones)
+                                             pheromones, distance_matrix)
 
             if not next_loc:
                 break
 
             new_route.customers.append(next_loc)
             total_route_demand += next_loc.demand
-            current_cost = current.cost_to(next_loc, current_cost)
+            current_cost = current.distance_to_test(next_loc, distance_matrix, current_cost)
             unvisited.remove(next_loc)
             current = next_loc
 
@@ -37,7 +37,7 @@ def construct_solution(alpha: int, beta: int, customers: list[Location], warehou
 
 
 def _select_next_location(current: Location, unvisited: list[Location], current_cost: int,
-                          capacity: int, alpha: int, beta: int, pheromones: dict) -> Optional[
+                          capacity: int, alpha: int, beta: int, pheromones: dict, distance_matrix: np.ndarray) -> Optional[
     Location]:
     """Select the next location for the ACO heuristic
         :arg current: Current location
@@ -61,10 +61,10 @@ def _select_next_location(current: Location, unvisited: list[Location], current_
         pheromone = pheromones[(current, next_loc)]
 
         # Cost to deliver to next_loc
-        cost = current.cost_to(next_loc, current_cost)
+        cost = np.sum(current.distance_to_test(next_loc, distance_matrix))
 
         # Desirability of next_loc
-        desirability = (1 / cost)
+        desirability = (1 / (cost + 1e-9))
 
         probabilities[next_loc] = (pheromone ** alpha) * (desirability ** beta)
 
