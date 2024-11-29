@@ -68,7 +68,7 @@ We also define the following variables:
 - $x_{ijk}$ : Defines whether the truck $k$ travelling from $i$ to $j$ is part of the solution.
 
 ```math
-x_{ijk} = \begin{cases} 1 & \text{if truck } k \text{ goes from vertex } i \text{ to vertex } j \\ 0 & \text{otherwise} \end{cases}
+x_{ijk} = \begin{cases} 1 & \text{ if truck } k \text{ goes from vertex } i \text{ to vertex } j \\ 0 & \text{ otherwise } \end{cases}
 ```
 
 
@@ -125,7 +125,7 @@ In this section, we will prove that VRPTW is in NP and NP-Complete.
 To prove VRPTW is in NP, we show that any certificate to the problem can be verified in polynomial time. 
 The decision problem is: 
 
-*Given a VRPTW $G$ and a certificate $s$, is $s$ an admissible solution to $G$?*
+Given a VRPTW $G$ and a certificate $s$, is $s$ an admissible solution to $G$?
 
 ### Certificate
 The VRPTW certificate is a set of routes, each of which is an ordered list of nodes $v \in V$.
@@ -168,7 +168,7 @@ The Vehicle Routing Problem (VRP) can be reduced to the Traveling Salesman Probl
 ### Mapping TSP to VRPTW
 Given an instance of TSP, we construct an equivalent instance of VRPTW:
 - Set the number of vehicles to $p = 1$.
-- Set the vehicle capacity $Q_k$ to a sufficiently large value so that a single vehicle can serve all customers (i.e., $\displaystyle Q \geq \sum^{v \in V} d(v)$).
+- Set the vehicle capacity $Q_k$ to a sufficiently large value so that a single vehicle can serve all customers (i.e., $\displaystyle Q \geq \sum^{v \in V} d(v)$ ).
 - Assign demand $d(v) = 1$ for each customer $v \in V$, ensuring the vehicle can transport all packages in a single trip.
 - Set the depot as any node $v_0 \in V$.
 - Set the service time of each customer to $0$.
@@ -199,9 +199,9 @@ where
 ### Pheromone formula
 Amount of pheromone is updated according to the equation
 
-$$
+```math
 \tau_{i, j}=(1-\rho) \tau_{i, j}+\Delta \tau_{i, j}
-$$
+```
 
 where
 - $\tau_{i, j}$ is the amount of pheromone on a given edge $i, j$
@@ -211,9 +211,9 @@ where
 - $\Delta \tau_{i, j}$ is the amount of pheromone deposited, typically given by:
 
 
-$$
+```math
 \Delta \tau_{i, j}^k= \begin{cases}1 / L_k & \text { if ant } k \text { travels on edge } i, j \\ 0 & \text { otherwise }\end{cases}
-$$
+```
 
 where 
 - $L_k$ is the total cost of the $k^{\text {th }}$ ant's tour (distance + service time + waiting time).
